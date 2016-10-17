@@ -15,7 +15,6 @@ ADD run.sh /run.sh
 ADD res/shadowsocks-server /opt/shadowsocks-server
 ADD res/kcptun-server /opt/kcptun-server
 RUN chmod +x /*.sh && \
-    bash /setup_ssserver.sh && \
-    uname -a
+    bash /setup_ssserver.sh
 
 CMD ["/run.sh"]
