@@ -4,6 +4,13 @@
 echo "root:$rootpass" | chpasswd
 echo "password for root (env:rootpass) is : ${rootpass} "
 
+[ -z ${arukas_token} ] && export arukas_token="fake_token"
+[ -z ${arukas_secret} ] && export arukas_secret="fake_secret"
+sed -ri "s/#\{ARUKAS_JSON_API_TOKEN\}/${arukas_token}/g" /root/.netrc
+sed -ri "s/#\{ARUKAS_JSON_API_SECRET\}/${arukas_secret}/g" /root/.netrc
+echo "arukas_token(env:arukas_token) is : ${arukas_token} "
+echo "arukas_secret(env:arukas_secret) is : ${arukas_secret} "
+
 export working_dir=/opt
 export ssserver_bin=${working_dir}/shadowsocks-server
 export kcptun_bin=${working_dir}/kcptun-server
@@ -35,7 +42,6 @@ kcptun config:
     datashard (env:kcpdatashard) : ${kcpdatashard}
     parityshard (env:kcpparityshard) : ${kcpparityshard}
 EOF
-
 
 core_num=`cat /proc/cpuinfo | grep processor | wc -l`
 
