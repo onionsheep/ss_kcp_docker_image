@@ -55,4 +55,5 @@ chmod +x ${ssserver_bin} ${kcptun_bin}
 
 /usr/sbin/sshd -D &
 ${sscmd} &
-${kcpcmd}
+${kcpcmd} &
+/root/webui/parse_arukas_json.py

@@ -52,31 +52,25 @@ def generate_ss_links():
             port_mappings = attributes['port_mappings'][0]
             for pm in port_mappings:
                 if pm['container_port'] == int(ssport):
-                    ss_string = '{0}:{1}@{2}:{3}'.format(ssencryption,
+                    ss_link, ss_string = compute_ss_link(ssencryption,
                                                          sspassword,
                                                          pm['host'],
                                                          pm['service_port'])
-                    ss_base64 = base64.b64encode(
-                        ss_string.encode('ascii')).decode()
-                    ss_link = 'ss://{0}'.format(ss_base64)
-                    ss_links.append(ss_link)
-                    print(ss_link)
+                    ss_link_info = {'ss_link': ss_link,
+                                    'ss_string': ss_string,
+                                    'container': attributes['arukas_domain']}
+                    ss_links.append(ss_link_info)
+                    print(ss_link_info)
                     # ss://method:password@hostname:port
                     # print(pm)
     return ss_links
 
 
-class SSKCPHTTPServer(http.server.SimpleHTTPRequestHandler):
-    def do_POST(self):
-        print(self.path)
-        pass
-
-
-def run(server_class=http.server.HTTPServer,
-        handler_class=SSKCPHTTPServer):
-    server_address = ('0.0.0.0', 80)
-    httpd = server_class(server_address, handler_class)
-    httpd.serve_forever()
+def compute_ss_link(method, password, host, port):
+    ss_string = '{0}:{1}@{2}:{3}'.format(method, password, host, port)
+    ss_base64 = base64.b64encode(ss_string.encode('ascii')).decode()
+    ss_link = 'ss://{0}'.format(ss_base64)
+    return ss_link, ss_string
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -86,14 +80,29 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         print(self.path_args)
         print(self.request.host)
-        self.write('Hello, world')
+        self.write(json.dumps(generate_ss_links()))
+        self.set_header("Content-Type", "application/json; charset=utf-8")
 
 
 def main():
     generate_ss_links()
+    settings = {
+        'static_path': os.path.join(os.path.dirname(__file__), 'static'),
+        # 'static_path': '/root/ssserver/tool/static',
+        'cookie_secret': '__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__',
+        'login_url': '/login',
+        'xsrf_cookies': True,
+        'debug': True,
+        'autoreload': True,
+        'static_hash_cache': False,
+        'serve_traceback': True,
+    }
     application = tornado.web.Application([
         (r'/', MainHandler),
-    ], debug=True, autoreload=False)
+        (r'/(apple-touch-icon\.png)',
+            tornado.web.StaticFileHandler,
+            dict(path=settings['static_path']))
+    ], **settings)
     application.listen(8888)
     tornado.ioloop.IOLoop.current().start()
 

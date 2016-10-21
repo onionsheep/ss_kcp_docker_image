@@ -30,8 +30,15 @@ ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key && \
 ssh-keygen -q -N "" -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key && \
 ssh-keygen -A
 
+# install openssh-clients for scp
+RUN dnf install -y openssh-clients
+
+RUN pip3 install tornado
+RUN for pkg in `pip3 list|cut -d ' ' -f 1`; do pip3 install --upgrade $pkg; done
 RUN mkdir -p /root/webui
-ADD tool/parse_arukas_json.py /root/webui/parse_arukas_json.py
+ADD tool/ /root/webui/
+RUN chmpd -R +x /root/webui/*.py
+# ADD tool/parse_arukas_json.py /root/webui/parse_arukas_json.py
 
 # install nginx
 # RUN dnf install -y nginx
