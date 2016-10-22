@@ -4,8 +4,8 @@
 echo "root:$rootpass" | chpasswd
 echo "password for root (env:rootpass) is : ${rootpass} "
 
-[ -z ${arukas_token} ] && export arukas_token="fake_token"
-[ -z ${arukas_secret} ] && export arukas_secret="fake_secret"
+[ -z ${arukas_token} ] && export arukas_token=""
+[ -z ${arukas_secret} ] && export arukas_secret=""
 sed -ri "s/#\{ARUKAS_JSON_API_TOKEN\}/${arukas_token}/g" /root/.netrc
 sed -ri "s/#\{ARUKAS_JSON_API_SECRET\}/${arukas_secret}/g" /root/.netrc
 echo "arukas_token(env:arukas_token) is : ${arukas_token} "

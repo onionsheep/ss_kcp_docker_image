@@ -10,17 +10,14 @@ MAINTAINER Liu Cong <onion_sheep@163.com>
 # RUN yum -y install epel-release && \
 #     yum -y install openssh-server pwgen vim wget gzip tmux&& \
 
-ADD run.sh /run.sh
-ADD res/shadowsocks-server /opt/shadowsocks-server
-ADD res/kcptun-server /opt/kcptun-server
-RUN chmod +x /*.sh
+
 # RUN bash /setup_ssserver.sh
 
 # change to tuna repo
-RUN mv /etc/yum.repos.d /etc/yum.repos.d.bak
-RUN mkdir /etc/yum.repos.d
-ADD res/fedora-tuna.repo /etc/yum.repos.d/fedora.repo
-ADD res/fedora-updates-tuna.repo /etc/yum.repos.d/fedora-updates.repo
+# RUN mv /etc/yum.repos.d /etc/yum.repos.d.bak
+# RUN mkdir /etc/yum.repos.d
+# ADD res/fedora-tuna.repo /etc/yum.repos.d/fedora.repo
+# ADD res/fedora-updates-tuna.repo /etc/yum.repos.d/fedora-updates.repo
 
 # install openssh
 RUN dnf install -y openssh-server && \
@@ -35,9 +32,17 @@ RUN dnf install -y openssh-clients
 
 RUN pip3 install tornado
 RUN for pkg in `pip3 list|cut -d ' ' -f 1`; do pip3 install --upgrade $pkg; done
+
+
+ADD run.sh /run.sh
+ADD res/shadowsocks-server /opt/shadowsocks-server
+ADD res/kcptun-server /opt/kcptun-server
+RUN chmod +x /*.sh
+
 RUN mkdir -p /root/webui
 ADD tool/ /root/webui/
-RUN chmpd -R +x /root/webui/*.py
+RUN chmod -R +x /root/webui/*.py
+
 # ADD tool/parse_arukas_json.py /root/webui/parse_arukas_json.py
 
 # install nginx
@@ -47,6 +52,9 @@ RUN chmpd -R +x /root/webui/*.py
 # echo "    login #{ARUKAS_JSON_API_TOKEN}" >> /root/.netrc
 # echo "    password #{ARUKAS_JSON_API_SECRET}" >> /root/.netrc
 
-
+EXPOSE 22
+EXPOSE 4000
+EXPOSE 4001
+EXPOSE 8888
 
 CMD ["/run.sh"]

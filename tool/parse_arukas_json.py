@@ -4,7 +4,6 @@ import http.client
 import json
 import base64
 import os
-import string
 import sys
 import http.server
 import tornado.ioloop
@@ -16,7 +15,6 @@ def generate_arukas_authorization_token():
     arukas_secret = os.environ.get('arukas_secret')
     if not arukas_token or not arukas_token:
         sys.exit('env arukas_token or arukas_secret does not exist')
-
     auth_string = arukas_token + ':' + arukas_secret
     authorization_token = base64.b64encode(auth_string.encode('ascii')).decode()
     print('authorization_token is : {0}'.format(authorization_token))
@@ -36,6 +34,7 @@ def get_containers():
     res = conn.getresponse()
     data = res.read()
     jsondata = json.loads(data.decode('utf-8'))
+
     containers = jsondata['data']
     return containers
 
@@ -85,6 +84,11 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 def main():
+    arukas_token = os.environ.get('arukas_token')
+    arukas_secret = os.environ.get('arukas_secret')
+    if not arukas_token or not arukas_secret:
+        print("arukas_token and arukas_secret is needed by web service")
+        sys.exit(1)
     generate_ss_links()
     settings = {
         'static_path': os.path.join(os.path.dirname(__file__), 'static'),
