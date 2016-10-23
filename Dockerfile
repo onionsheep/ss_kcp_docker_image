@@ -29,7 +29,7 @@ RUN dnf install -y vim-enhanced
 # install iproute
 RUN dnf install -y iproute
 
-COPY ./run.sh /run.sh
+COPY ./run.sh /root/run.sh
 COPY ./res/shadowsocks-server /opt/shadowsocks-server
 COPY ./res/kcptun-server /opt/kcptun-server
 RUN chmod +x /*.sh
@@ -52,4 +52,4 @@ EXPOSE 4000
 EXPOSE 4001
 EXPOSE 8888
 
-CMD ["/run.sh"]
+CMD ["/root/run.sh"]
