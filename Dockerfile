@@ -26,6 +26,9 @@ RUN for pkg in `pip3 list|cut -d ' ' -f 1`; do pip3 install --upgrade $pkg; done
 # install vim
 RUN dnf install -y vim-enhanced
 
+# install iproute
+RUN dnf install -y iproute
+
 ADD run.sh /run.sh
 ADD res/shadowsocks-server /opt/shadowsocks-server
 ADD res/kcptun-server /opt/kcptun-server
