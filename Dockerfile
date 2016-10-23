@@ -29,13 +29,13 @@ RUN dnf install -y vim-enhanced
 # install iproute
 RUN dnf install -y iproute
 
-ADD run.sh /run.sh
-ADD res/shadowsocks-server /opt/shadowsocks-server
-ADD res/kcptun-server /opt/kcptun-server
+ADD ./run.sh /run.sh
+ADD ./res/shadowsocks-server /opt/shadowsocks-server
+ADD ./res/kcptun-server /opt/kcptun-server
 RUN chmod +x /*.sh
 
 RUN mkdir -p /root/webui
-ADD tool/ /root/webui/
+ADD ./tool/ /root/webui/
 RUN chmod -R +x /root/webui/*.py
 
 # ADD tool/parse_arukas_json.py /root/webui/parse_arukas_json.py
