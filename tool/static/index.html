@@ -3,75 +3,48 @@
     <title></title>
     <script src="jquery-3.1.1.min.js"></script>
     <script src="qrcode.min.js"></script>
+    <script src="underscore-min.js"></script>
     <style>
 
     </style>
 </head>
 <body>
-<dl id="infos">
-    <!--<dt class="container-name">-->
-    <!--</dt>-->
-    <!--<dd class="qr-code">-->
-    <!--</dd>-->
-    <!--<dd class="ss-link">-->
-    <!--</dd>-->
-    <!--<dd class="ss-string">-->
-    <!--</dd>-->
-</dl>
+<script id="infos-template" type="template/underscorejs">
+    <div><%
+        _.each(containers,function(container,key,list){
+        %>
+        <div class="container-name"><%=container["container"]%></div>
+        <div class="ss-link"><%=container['ss_link']%></div>
+        <div class="ss-string"><%=container['ss_string']%></div>
+        <div class="qr-code" data-text="<%=container['ss_link']%>"></div>
+        <%
+        })
+        %>
+    </div>
+</script>
+<div id="infos"></div>
+
 </body>
 <script>
-    function uuid() {
-        var s = [];
-        var hexDigits = "0123456789abcdef";
-        for (var i = 0; i < 36; i++) {
-            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-        }
-        s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
-        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
-        s[8] = s[13] = s[18] = s[23] = "-";
-
-        var uuid = s.join("");
-        return uuid;
-    }
     $(function () {
         var $infos = $("#infos");
         $.get("/", function (data) {
             var infos = data;
-            for (var i in infos) {
-                var info = infos[i];
-                var cn = info["container"];
-                var sl = info["ss_link"];
-                var ss = info["ss_string"];
-                var uid = uuid();
-                $("<dt>").addClass("container-name").text(cn).attr("uuid", uid)
-                        .appendTo($infos);
-                var $qc = $("<dd>").addClass("qr-code").attr("uuid", uid)
-                        .appendTo($infos);
-                var qrcode = new QRCode($qc[0], {
-                    text: sl,
+            var infos_template = $("#infos-template").html();
+            var infos_html = _.template(infos_template)({"containers": infos});
+            $("#infos").html(infos_html);
+            $(".qr-code").each(function(){
+                var $qrcode = $(this);
+                var qrcode = new QRCode($qrcode[0], {
+                    text: $qrcode.data("text"),
                     width: 256,
                     height: 256,
                     colorDark: "#000000",
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.H
                 });
-                $("<dd>").addClass("ss-link").attr("uuid", uid).text(sl)
-                        .hide()
-                        .appendTo($infos);
-                $("<dd>").addClass("ss-string").text(ss).attr("uuid", uid)
-                        .hide()
-                        .appendTo($infos);
-            }
+            });
         });
-
-        $infos.on("click", ".qr-code", function () {
-            var $this = $(this);
-            var $dt = $this.parent();
-            $dt.find(".ss-link").toggle();
-            $dt.find(".ss-string").toggle();
-        });
-
-
     });
 </script>
 </html>

@@ -23,6 +23,8 @@ RUN pip3 install tornado
 RUN pip3 install --upgrade pip
 RUN for pkg in `pip3 list|cut -d ' ' -f 1`; do pip3 install --upgrade $pkg; done
 
+# install vim
+RUN dnf install -y vim-enhanced
 
 ADD run.sh /run.sh
 ADD res/shadowsocks-server /opt/shadowsocks-server

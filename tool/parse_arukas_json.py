@@ -26,7 +26,8 @@ def get_containers():
     headers = {
         'content-type': 'application/vnd.api+json',
         'accept': 'application/vnd.api+json',
-        'authorization': 'Basic {0}'.format(generate_arukas_authorization_token()),
+        'authorization': 'Basic {0}'.format(
+            generate_arukas_authorization_token()),
         'cache-control': 'no-cache'
     }
 
@@ -39,15 +40,17 @@ def get_containers():
     return containers
 
 
-def generate_ss_links():
+def generate_ss_links(containers=get_containers()):
     ss_links = []
     ssencryption = os.environ.get('ssencryption', 'aes-256-cfb')
     sspassword = os.environ.get('sspassword', '12345679')
     ssport = os.environ.get('ssport', '4000')
-    containers = get_containers()
     for container in containers:
         attributes = container['attributes']
         if attributes['image_name'] == 'onionsheep/ss_kcp:latest':
+            port_mappings_arr = attributes['port_mappings']
+            if not port_mappings_arr:
+                continue
             port_mappings = attributes['port_mappings'][0]
             for pm in port_mappings:
                 if pm['container_port'] == int(ssport):
@@ -57,7 +60,8 @@ def generate_ss_links():
                                                          pm['service_port'])
                     ss_link_info = {'ss_link': ss_link,
                                     'ss_string': ss_string,
-                                    'container': attributes['arukas_domain']}
+                                    'container': attributes['arukas_domain']
+                                    }
                     ss_links.append(ss_link_info)
                     print(ss_link_info)
                     # ss://method:password@hostname:port
@@ -72,6 +76,12 @@ def compute_ss_link(method, password, host, port):
     return ss_link, ss_string
 
 
+def filter_container_by_name(containers, container_name):
+    for container in containers:
+        if container["attributes"]["arukas_domain"].find(container_name) >= 0:
+            yield container
+
+
 class MainHandler(tornado.web.RequestHandler):
     def data_received(self, chunk):
         pass
@@ -79,7 +89,11 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         print(self.path_args)
         print(self.request.host)
-        self.write(json.dumps(generate_ss_links()))
+        containers = get_containers()
+        container_name = os.environ.get('arukas_domain')
+        if container_name:
+            containers = filter_container_by_name(containers, container_name)
+        self.write(json.dumps(generate_ss_links(containers)))
         self.set_header("Content-Type", "application/json; charset=utf-8")
 
 
@@ -104,8 +118,8 @@ def main():
     application = tornado.web.Application([
         (r'/', MainHandler),
         (r'/(apple-touch-icon\.png)',
-            tornado.web.StaticFileHandler,
-            dict(path=settings['static_path']))
+         tornado.web.StaticFileHandler,
+         dict(path=settings['static_path']))
     ], **settings)
     application.listen(8888)
     tornado.ioloop.IOLoop.current().start()
@@ -113,9 +127,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(int(main() or 0))
-
-
-
-
-
-

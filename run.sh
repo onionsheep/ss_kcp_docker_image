@@ -11,6 +11,8 @@ sed -ri "s/#\{ARUKAS_JSON_API_SECRET\}/${arukas_secret}/g" /root/.netrc
 echo "arukas_token(env:arukas_token) is : ${arukas_token} "
 echo "arukas_secret(env:arukas_secret) is : ${arukas_secret} "
 
+echo "arukas_domain(arukas_domain:arukas_domain) is ${arukas_domain} "
+
 export working_dir=/opt
 export ssserver_bin=${working_dir}/shadowsocks-server
 export kcptun_bin=${working_dir}/kcptun-server
