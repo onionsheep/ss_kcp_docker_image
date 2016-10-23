@@ -47,7 +47,7 @@ def generate_ss_links(containers=get_containers()):
     ssport = os.environ.get('ssport', '4000')
     for container in containers:
         attributes = container['attributes']
-        if attributes['image_name'] == 'onionsheep/ss_kcp:latest':
+        if attributes['image_name'].startwith('onionsheep/ss_kcp'):
             port_mappings_arr = attributes['port_mappings']
             if not port_mappings_arr:
                 continue
