@@ -29,10 +29,12 @@ RUN dnf install -y vim-enhanced
 # install iproute
 RUN dnf install -y iproute
 
-COPY ./run.sh /root/run.sh
 COPY ./res/shadowsocks-server /opt/shadowsocks-server
 COPY ./res/kcptun-server /opt/kcptun-server
-RUN chmod +x /*.sh
+RUN chmod +x /opt/*
+
+COPY ./run.sh /root/run.sh
+RUN chmod +x /root/run.sh
 
 RUN mkdir -p /root/webui
 COPY ./tool/ /root/webui/
