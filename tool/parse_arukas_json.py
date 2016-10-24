@@ -8,7 +8,7 @@ import sys
 import http.server
 import tornado.ioloop
 import tornado.web
-
+import re
 
 def generate_arukas_authorization_token():
     arukas_token = os.environ.get('arukas_token')
@@ -47,7 +47,12 @@ def generate_ss_links(containers=get_containers()):
     ssport = os.environ.get('ssport', '4000')
     for container in containers:
         attributes = container['attributes']
-        if attributes['image_name'].startwith('onionsheep/ss_kcp'):
+        image_name = attributes['image_name']
+        # matcher = re.search(r':[^:]+$', image_name)
+        # if matcher and matcher.group():
+        #     suffix_len = len(matcher.group())
+        #     image_name = image_name.rstrip[:-suffix_len]
+        if image_name.find('onionsheep/ss_kcp') >= 0:
             port_mappings_arr = attributes['port_mappings']
             if not port_mappings_arr:
                 continue
