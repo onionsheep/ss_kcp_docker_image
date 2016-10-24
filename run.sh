@@ -55,7 +55,8 @@ kcpcmd="${kcptun_bin} -t "127.0.0.1:${ssport}" -l ":${kcpport}" \
 
 chmod +x ${ssserver_bin} ${kcptun_bin}
 
+/root/webui/parse_arukas_json.py &
 /usr/sbin/sshd -D &
 ${sscmd} &
-${kcpcmd} &
-/root/webui/parse_arukas_json.py
+${kcpcmd}
+
