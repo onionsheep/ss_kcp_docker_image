@@ -42,6 +42,46 @@ shadowsocks config:
     timeout (env:sstimeout) : ${sstimeout}
 EOF
 
+[ -z ${ssrpassword} ] && export ssrpassword=${sspassword}
+[ -z ${ssrencryption} ] && export ssrencryption=${ssencryption}
+[ -z ${ssrport} ] && export ssrport=4002
+[ -z ${ssrtimeout} ] && export ssrtimeout=300
+[ -z ${ssrprotocol} ] && export ssrprotocol="auth_aes128_md5_compatible"
+[ -z ${ssrobfs} ] && export ssrobfs="http_post_compatible"
+[ -z ${ssrfast_open} ] && export ssrfast_open="true"
+
+# 传入key，获得value
+function get_ssr_config(){
+    local ssr_config=/root/shadowsocks/user-config.json
+    local key=$1
+    grep ${key} ${ssr_config} | cut -d : -f 2 | sed 's/[,"]//g' | tr -d [:space:]
+}
+
+# 传入 key value 更新之
+function update_ssr_config(){
+    local ssr_config=/root/shadowsocks/user-config.json
+    local key=$1
+    local new_value=$2
+    old_value=`get_ssr_config ${key}`
+    if [ -n "${old_value}" ]; then
+        sed -ri "s/(${key}.*)${old_value}/\1${new_value}/g" ${ssr_config}
+    else
+        sed -ri "s/(${key}.*)\"\"/\1"${new_value}"/g" ${ssr_config}
+    fi
+}
+
+update_ssr_config password ${ssrpassword}
+update_ssr_config method ${ssrencryption}
+update_ssr_config server_port ${ssrport}
+update_ssr_config timeout ${ssrtimeout}
+update_ssr_config protocol ${ssrprotocol}
+update_ssr_config obfs ${ssrobfs}
+update_ssr_config fast_open ${ssrfast_open}
+
+echo "shadowsocksR config:"
+cat /root/shadowsocks/user-config.json
+
+
 [ -z ${kcpport} ] && export kcpport=4001
 [ -z ${kcpsndwnd} ] && export kcpsndwnd=1024
 [ -z ${kcprcvwnd} ] && export kcprcvwnd=1024
@@ -66,10 +106,15 @@ kcpcmd="${kcptun_bin} -t "127.0.0.1:${ssport}" -l ":${kcpport}" \
 --sndwnd ${kcpsndwnd} --rcvwnd ${kcprcvwnd} --mode ${kcpmode} \
 --datashard ${kcpdatashard} --parityshard ${kcpparityshard}"
 
+#ssrcmd="python server.py -p ${ssrport} -k ${ssrpassword} -m ${ssrencryption} \
+#-O ${ssrprotocol} -o ${ssrobfs} -d start"
+ssrcmd="python /root/shadowsocks/shadowsocks/server.py -c /root/shadowsocks/user-config.json"
+
 chmod +x ${ssserver_bin} ${kcptun_bin}
 
 /root/webui/parse_arukas_json.py &
 /usr/sbin/sshd -D &
 ${sscmd} &
+${ssrcmd} &
 ${kcpcmd}
 

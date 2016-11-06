@@ -29,6 +29,20 @@ RUN dnf install -y vim-enhanced
 # install iproute
 RUN dnf install -y iproute
 
+# install python
+RUN dnf install -y python
+
+# install cymysql only needed by ssr multi-user mode
+# RUN pip install cymysql
+
+# install git
+RUN dnf install -y git
+
+# install shadowsocksR
+RUN cd && git clone -b manyuser https://github.com/breakwa11/shadowsocks.git
+RUN cd ~/shadowsocks && bash initcfg.sh
+RUN cd ~/shadowsocks/shadowsocks
+
 COPY ./res/shadowsocks-server /opt/shadowsocks-server
 COPY ./res/kcptun-server /opt/kcptun-server
 RUN chmod +x /opt/*
