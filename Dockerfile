@@ -63,9 +63,11 @@ RUN chmod -R +x /root/webui/*.py
 # echo "    login #{ARUKAS_JSON_API_TOKEN}" >> /root/.netrc
 # echo "    password #{ARUKAS_JSON_API_SECRET}" >> /root/.netrc
 
+EXPOSE 8888
 EXPOSE 22
 EXPOSE 4000
 EXPOSE 4001
-EXPOSE 8888
+EXPOSE 4002
+
 
 CMD ["/root/run.sh"]
