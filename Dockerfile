@@ -1,8 +1,11 @@
 FROM fedora:latest
 MAINTAINER Liu Cong <onion_sheep@163.com>
 
+# use only ipv4 for dnf
+RUN echo "ip_resolve=4" >> /etc/dnf/dnf.conf
+
 # update all packages
-RUN dnf update -y
+RUN dnf clean all && dnf upgrade -y
 
 # install openssh
 RUN dnf install -y openssh-server && \
@@ -71,6 +74,5 @@ EXPOSE 22
 EXPOSE 4000
 EXPOSE 4001
 EXPOSE 4002
-
 
 CMD ["/root/run.sh"]
