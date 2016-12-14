@@ -112,9 +112,9 @@ ssrcmd="python /root/shadowsocks/shadowsocks/server.py -c /root/shadowsocks/user
 
 chmod +x ${ssserver_bin} ${kcptun_bin}
 
-/root/webui/parse_arukas_json.py &
-/usr/sbin/sshd -D &
-${sscmd} &
-${ssrcmd} &
-${kcpcmd}
+/root/webui/parse_arukas_json.py 2>&1 | tee /var/log/parse_arukas_json.py.log &
+/usr/sbin/sshd -D 2>&1 | tee /var/log/sshd.log &
+${sscmd} 2>&1 | tee /var/log/shadowsocks.log &
+${ssrcmd} 2>&1 | tee /var/log/shadowsocksR.log &
+${kcpcmd} 2>&1 | tee /var/log/kcptun.log
 
