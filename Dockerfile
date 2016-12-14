@@ -1,6 +1,8 @@
 FROM fedora:latest
 MAINTAINER Liu Cong <onion_sheep@163.com>
 
+# update all packages
+RUN dnf update -y
 
 # install openssh
 RUN dnf install -y openssh-server && \
@@ -21,10 +23,11 @@ RUN pip3 install tornado
 
 # upgrade all python packages
 RUN pip3 install --upgrade pip
-RUN for pkg in `pip3 list|cut -d ' ' -f 1`; do pip3 install --upgrade $pkg; done
+RUN for pkg in `pip3 list --format=columns | awk 'NR > 2 {print $1}'`; do pip3 install --upgrade $pkg; done
 
 # install vim
-RUN dnf install -y vim-enhanced
+# some times, vim-minimal conflicts with vim-common, so remove it and install vim
+RUN dnf remove -y vim-minimal && dnf install -y vim
 
 # install iproute
 RUN dnf install -y iproute
