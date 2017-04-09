@@ -53,7 +53,7 @@ def generate_ss_links(containers=get_containers()):
     ]
 
     image_exist_filtered_containers_attributes = [
-        attributes for attributes in containers_attributes if 'image_name' in attributes
+        attributes for attributes in containers_attributes if attributes.get('image_name')
     ]
 
     image_name_filtered_containers_attributes = [
@@ -63,7 +63,7 @@ def generate_ss_links(containers=get_containers()):
 
     port_mappings_exist_filtered_containers_attributes = [
         attributes for attributes in image_name_filtered_containers_attributes if
-        'port_mappings' in attributes
+        attributes.get('port_mappings')
     ]
 
     for attributes in port_mappings_exist_filtered_containers_attributes:
@@ -80,9 +80,9 @@ def generate_ss_links(containers=get_containers()):
                                                  ss_host,
                                                  ss_service_port)
             ss_ip_link, ss_ip_string = compute_ss_link(ssencryption,
-                                                 sspassword,
-                                                 ss_ip,
-                                                 ss_service_port)
+                                                       sspassword,
+                                                       ss_ip,
+                                                       ss_service_port)
             ss_link_info = {'ss_host_link': ss_link,
                             'ss_host_string': ss_string,
                             'ss_ip_link': ss_ip_link,
