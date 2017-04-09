@@ -1,0 +1,72 @@
+<html>
+<head>
+    <title></title>
+    <script src="jquery-3.1.1.min.js"></script>
+    <script src="qrcode.min.js"></script>
+    <script src="underscore-min.js"></script>
+    <style>
+        .container-name {
+            font-size: x-large;
+        }
+
+        .container-info-block {
+            font-family: "Ubuntu Mono", Monaco, Monospaced;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <script id="infos-template" type="template/underscorejs">
+        <%
+        _.each(containers,function(container,key,list){
+        %>
+        <div class="container-info-block">
+            <div class="container-name"><%=container["container"]%></div>
+            <button class="toggle-host-ip">toggle ip/host</button>
+            <div class="ss-info ss-host" style="display: none">
+                <div class="ss-host-link"><%=container['ss_host_link']%></div>
+                <div class="ss-host-string"><%=container['ss_host_string']%></div>
+                <div class="qr-code" data-text="<%=container['ss_host_link']%>"></div>
+            </div>
+            <div class="ss-info ss-ip">
+                <div class="ss-ip-link"><%=container['ss_ip_link']%></div>
+                <div class="ss-ip-string"><%=container['ss_ip_string']%></div>
+                <div class="qr-code" data-text="<%=container['ss_ip_link']%>"></div>
+            </div>
+        </div>
+        <%
+        })
+        %>
+    </script>
+</div>
+<div id="infos"></div>
+
+</body>
+<script>
+    $(function () {
+        var $infos = $("#infos");
+        $("body").on('click', 'button.toggle-host-ip', function(){
+            var $this = $(this);
+            var $containerInfoBlock = $this.parent();
+            $containerInfoBlock.find(".ss-info").toggle();
+        });
+        $.get("/", function (data) {
+            var infos = data;
+            var infos_template = $("#infos-template").html();
+            var infos_html = _.template(infos_template)({"containers": infos});
+            $("#infos").html(infos_html);
+            $(".qr-code").each(function () {
+                var $qrcode = $(this);
+                var qrcode = new QRCode($qrcode[0], {
+                    text: $qrcode.data("text"),
+                    width: 256,
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            });
+        });
+    });
+</script>
+</html>

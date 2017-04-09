@@ -34,13 +34,13 @@ export kcptun_bin=${working_dir}/kcptun-server
 [ -z ${ssencryption} ] && export ssencryption="aes-256-cfb"
 [ -z ${ssport} ] && export ssport=4000
 [ -z ${sstimeout} ] && export sstimeout=300
-cat <<EOF
-shadowsocks config:
-    password (env:sspassword) : ${sspassword}
-    encryption (env:ssencryption) : ${ssencryption}
-    port (env:ssport) : ${ssport}
-    timeout (env:sstimeout) : ${sstimeout}
-EOF
+
+echo  "shadowsocks config:                                "
+echo  "    password (env:sspassword) : ${sspassword}      "
+echo  "    encryption (env:ssencryption) : ${ssencryption}"
+echo  "    port (env:ssport) : ${ssport}                  "
+echo  "    timeout (env:sstimeout) : ${sstimeout}         "
+
 
 [ -z ${ssrpassword} ] && export ssrpassword=${sspassword}
 [ -z ${ssrencryption} ] && export ssrencryption=${ssencryption}
@@ -88,15 +88,14 @@ cat /root/shadowsocks/user-config.json
 [ -z ${kcpmode} ] && export kcpmode=fast2
 [ -z ${kcpdatashard} ] && export kcpdatashard=10
 [ -z ${kcpparityshard} ] && export kcpparityshard=3
-cat <<EOF
-kcptun config:
-    port (env:kcpport) : ${kcpport}
-    sndwnd (env:kcpsndwnd) : ${kcpsndwnd}
-    rcvwnd (env:kcprcvwnd) : ${kcprcvwnd}
-    mode (env:kcpmode) : ${kcpmode}
-    datashard (env:kcpdatashard) : ${kcpdatashard}
-    parityshard (env:kcpparityshard) : ${kcpparityshard}
-EOF
+
+echo "kcptun config:                                              "
+echo "    port (env:kcpport) : ${kcpport}                         "
+echo "    sndwnd (env:kcpsndwnd) : ${kcpsndwnd}                   "
+echo "    rcvwnd (env:kcprcvwnd) : ${kcprcvwnd}                   "
+echo "    mode (env:kcpmode) : ${kcpmode}                         "
+echo "    datashard (env:kcpdatashard) : ${kcpdatashard}          "
+echo "    parityshard (env:kcpparityshard) : ${kcpparityshard}    "
 
 core_num=`cat /proc/cpuinfo | grep processor | wc -l`
 
@@ -112,9 +111,9 @@ ssrcmd="python /root/shadowsocks/shadowsocks/server.py -c /root/shadowsocks/user
 
 chmod +x ${ssserver_bin} ${kcptun_bin}
 
-/root/webui/parse_arukas_json.py 2>&1 | tee /var/log/parse_arukas_json.py.log &
-/usr/sbin/sshd -D 2>&1 | tee /var/log/sshd.log &
-${sscmd} 2>&1 | tee /var/log/shadowsocks.log &
-${ssrcmd} 2>&1 | tee /var/log/shadowsocksR.log &
-${kcpcmd} 2>&1 | tee /var/log/kcptun.log
+/root/webui/parse_arukas_json.py 2>&1 > /var/log/parse_arukas_json.py.log &
+/usr/sbin/sshd -D 2>&1 > /var/log/sshd.log &
+${sscmd} 2>&1 > /var/log/shadowsocks.log &
+${ssrcmd} 2>&1 > /var/log/shadowsocksR.log &
+${kcpcmd} 2>&1 > /var/log/kcptun.log
 
