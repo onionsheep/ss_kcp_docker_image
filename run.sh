@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 
 export rootpass=${rootpass}
+
 export arukas_token=${arukas_token}
 export arukas_secret=${arukas_secret}
 export arukas_domain=${arukas_domain}
+
 export sspassword=${sspassword}
 export ssencryption=${ssencryption}
 export ssport=${ssport}
 export sstimeout=${sstimeout}
+
 export kcpport=${kcpport}
+export kcpkey=${kcpkey}
+export kcpcrypt=${kcpcrypt}
 export kcpsndwnd=${kcpsndwnd}
 export kcprcvwnd=${kcprcvwnd}
 export kcpmode=${kcpmode}
@@ -94,15 +99,19 @@ if [ -n "${enable_ssr}" ] && [ "${enable_ssr}" != "no" ]; then
     cat /root/shadowsocks/user-config.json
 fi
 
-[ -z ${kcpport} ] && export kcpport=4001
-[ -z ${kcpsndwnd} ] && export kcpsndwnd=1024
-[ -z ${kcprcvwnd} ] && export kcprcvwnd=1024
-[ -z ${kcpmode} ] && export kcpmode=fast2
-[ -z ${kcpdatashard} ] && export kcpdatashard=10
-[ -z ${kcpparityshard} ] && export kcpparityshard=3
+[ -z "${kcpport}" ] && export kcpport=4001
+[ -z "${kcpkey}" ] && export kcpkey=12345679
+[ -z "${kcpcrypt}" ] && export kcpcrypt=aes
+[ -z "${kcpsndwnd}" ] && export kcpsndwnd=1024
+[ -z "${kcprcvwnd}" ] && export kcprcvwnd=1024
+[ -z "${kcpmode}" ] && export kcpmode=fast
+[ -z "${kcpdatashard}" ] && export kcpdatashard=10
+[ -z "${kcpparityshard}" ] && export kcpparityshard=3
 
 echo "kcptun config:                                              "
 echo "    port (env:kcpport) : ${kcpport}                         "
+echo "    key (env:kcpkey) : ${kcpkey}                            "
+echo "    crypt (env:kcpcrypt) : ${kcpcrypt}                      "
 echo "    sndwnd (env:kcpsndwnd) : ${kcpsndwnd}                   "
 echo "    rcvwnd (env:kcprcvwnd) : ${kcprcvwnd}                   "
 echo "    mode (env:kcpmode) : ${kcpmode}                         "
@@ -121,11 +130,14 @@ sscmd="${ssserver_bin} \
 kcpcmd="${kcptun_bin} \
     -t 127.0.0.1:${ssport} \
     -l :${kcpport} \
+    --key ${kcpkey} \
+    --crypt ${kcpcrypt} \
     --sndwnd ${kcpsndwnd} \
     --rcvwnd ${kcprcvwnd} \
     --mode ${kcpmode} \
     --datashard ${kcpdatashard} \
-    --parityshard ${kcpparityshard}"
+    --parityshard ${kcpparityshard} \
+    --log /var/log/kcptun.log"
 
 #ssrcmd="python server.py -p ${ssrport} -k ${ssrpassword} -m ${ssrencryption} \
 #-O ${ssrprotocol} -o ${ssrobfs} -d start"
@@ -138,6 +150,6 @@ chmod +x ${ssserver_bin} ${kcptun_bin}
 
 nohup /root/webui/parse_arukas_json.py 2>&1 > /var/log/parse_arukas_json.py.log &
 nohup ${sscmd} 2>&1 > /var/log/shadowsocks.log &
-nohup ${kcpcmd} 2>&1 > /var/log/kcptun.log &
+nohup ${kcpcmd} &
 /usr/sbin/sshd -D 2>&1 > /var/log/sshd.log
 
