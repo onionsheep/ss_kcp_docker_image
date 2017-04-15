@@ -10,9 +10,19 @@ export ssport=${ssport}
 export sstimeout=${sstimeout}
 export kcpport=${kcpport}
 export kcpsndwnd=${kcpsndwnd}
+export kcprcvwnd=${kcprcvwnd}
 export kcpmode=${kcpmode}
 export kcpdatashard=${kcpdatashard}
 export kcpparityshard=${kcpparityshard}
+
+export enable_ssr=${enable_ssr}
+export ssrpassword=${ssrpassword}
+export ssrencryption=${ssrencryption}
+export ssrport=${ssrport}
+export ssrtimeout=${ssrtimeout}
+export ssrprotocol=${ssrprotocol}
+export ssrobfs=${ssrobfs}
+export ssrfast_open=${ssrfast_open}
 
 
 [ -z ${rootpass} ] && export rootpass="12345679"
@@ -41,14 +51,14 @@ echo  "    encryption (env:ssencryption) : ${ssencryption}"
 echo  "    port (env:ssport) : ${ssport}                  "
 echo  "    timeout (env:sstimeout) : ${sstimeout}         "
 
-
-[ -z ${ssrpassword} ] && export ssrpassword=${sspassword}
-[ -z ${ssrencryption} ] && export ssrencryption=${ssencryption}
-[ -z ${ssrport} ] && export ssrport=4002
-[ -z ${ssrtimeout} ] && export ssrtimeout=300
-[ -z ${ssrprotocol} ] && export ssrprotocol="auth_aes128_md5_compatible"
-[ -z ${ssrobfs} ] && export ssrobfs="http_post_compatible"
-[ -z ${ssrfast_open} ] && export ssrfast_open="true"
+[ -z "${enable_ssr}" ] && export enable_ssr="no"
+[ -z "${ssrpassword}" ] && export ssrpassword=${sspassword}
+[ -z "${ssrencryption}" ] && export ssrencryption=${ssencryption}
+[ -z "${ssrport}" ] && export ssrport=4002
+[ -z "${ssrtimeout}" ] && export ssrtimeout=300
+[ -z "${ssrprotocol}" ] && export ssrprotocol="auth_aes128_md5"
+[ -z "${ssrobfs}" ] && export ssrobfs="tls1.2_ticket_auth"
+[ -z "${ssrfast_open}" ] && export ssrfast_open="true"
 
 # 传入key，获得value
 function get_ssr_config(){
@@ -70,17 +80,19 @@ function update_ssr_config(){
     fi
 }
 
-update_ssr_config password ${ssrpassword}
-update_ssr_config method ${ssrencryption}
-update_ssr_config server_port ${ssrport}
-update_ssr_config timeout ${ssrtimeout}
-update_ssr_config protocol ${ssrprotocol}
-update_ssr_config obfs ${ssrobfs}
-update_ssr_config fast_open ${ssrfast_open}
+if [ -n "${enable_ssr}" ] && [ "${enable_ssr}" != "no" ]; then
+    # 根据参数确定是否启用SSR
+    update_ssr_config password ${ssrpassword}
+    update_ssr_config method ${ssrencryption}
+    update_ssr_config server_port ${ssrport}
+    update_ssr_config timeout ${ssrtimeout}
+    update_ssr_config protocol ${ssrprotocol}
+    update_ssr_config obfs ${ssrobfs}
+    update_ssr_config fast_open ${ssrfast_open}
 
-echo "shadowsocksR config:"
-cat /root/shadowsocks/user-config.json
-
+    echo "shadowsocksR config:"
+    cat /root/shadowsocks/user-config.json
+fi
 
 [ -z ${kcpport} ] && export kcpport=4001
 [ -z ${kcpsndwnd} ] && export kcpsndwnd=1024
@@ -99,21 +111,33 @@ echo "    parityshard (env:kcpparityshard) : ${kcpparityshard}    "
 
 core_num=`cat /proc/cpuinfo | grep processor | wc -l`
 
-sscmd="${ssserver_bin} -core ${core_num} -k ${sspassword} -m ${ssencryption} \
--p ${ssport} -t ${sstimeout}"
-kcpcmd="${kcptun_bin} -t "127.0.0.1:${ssport}" -l ":${kcpport}" \
---sndwnd ${kcpsndwnd} --rcvwnd ${kcprcvwnd} --mode ${kcpmode} \
---datashard ${kcpdatashard} --parityshard ${kcpparityshard}"
+sscmd="${ssserver_bin} \
+    -core ${core_num} \
+    -k ${sspassword} \
+    -m ${ssencryption} \
+    -p ${ssport} \
+    -t ${sstimeout}"
+
+kcpcmd="${kcptun_bin} \
+    -t 127.0.0.1:${ssport} \
+    -l :${kcpport} \
+    --sndwnd ${kcpsndwnd} \
+    --rcvwnd ${kcprcvwnd} \
+    --mode ${kcpmode} \
+    --datashard ${kcpdatashard} \
+    --parityshard ${kcpparityshard}"
 
 #ssrcmd="python server.py -p ${ssrport} -k ${ssrpassword} -m ${ssrencryption} \
 #-O ${ssrprotocol} -o ${ssrobfs} -d start"
-ssrcmd="python /root/shadowsocks/shadowsocks/server.py -c /root/shadowsocks/user-config.json"
+if [ -n "${enable_ssr}" ] && [ "${enable_ssr}" != "no" ]; then
+    ssrcmd="python /root/shadowsocks/shadowsocks/server.py -c /root/shadowsocks/user-config.json"
+    nohup ${ssrcmd} 2>&1 > /var/log/shadowsocksR.log &
+fi
 
 chmod +x ${ssserver_bin} ${kcptun_bin}
 
-/root/webui/parse_arukas_json.py 2>&1 > /var/log/parse_arukas_json.py.log &
-/usr/sbin/sshd -D 2>&1 > /var/log/sshd.log &
-${sscmd} 2>&1 > /var/log/shadowsocks.log &
-${ssrcmd} 2>&1 > /var/log/shadowsocksR.log &
-${kcpcmd} 2>&1 > /var/log/kcptun.log
+nohup /root/webui/parse_arukas_json.py 2>&1 > /var/log/parse_arukas_json.py.log &
+nohup ${sscmd} 2>&1 > /var/log/shadowsocks.log &
+nohup ${kcpcmd} 2>&1 > /var/log/kcptun.log &
+/usr/sbin/sshd -D 2>&1 > /var/log/sshd.log
 
