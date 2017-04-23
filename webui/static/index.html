@@ -1,16 +1,20 @@
 <html>
 <head>
     <title></title>
-    <script src="jquery-3.1.1.min.js"></script>
-    <script src="qrcode.min.js"></script>
-    <script src="underscore-min.js"></script>
+    <script src="/static/jquery-3.1.1.min.js"></script>
+    <script src="/static/qrcode.min.js"></script>
+    <script src="/static/underscore-min.js"></script>
     <style>
         .container-name {
-            font-size: x-large;
+            font-size: xx-large;
         }
 
         .container-info-block {
-            font-family: "Ubuntu Mono", Monaco, Monospaced;
+            font-family: "Ubuntu Mono", Monaco, Monospaced, monospace;
+            font-size: x-large;
+            border: 3px dashed chocolate;
+            margin: 9px;
+            padding: 6px;
         }
     </style>
 </head>
@@ -45,12 +49,12 @@
 <script>
     $(function () {
         var $infos = $("#infos");
-        $("body").on('click', 'button.toggle-host-ip', function(){
+        $("body").on('click', 'button.toggle-host-ip', function () {
             var $this = $(this);
             var $containerInfoBlock = $this.parent();
             $containerInfoBlock.find(".ss-info").toggle();
         });
-        $.get("/", function (data) {
+        $.get("/data", function (data) {
             var infos = data;
             var infos_template = $("#infos-template").html();
             var infos_html = _.template(infos_template)({"containers": infos});

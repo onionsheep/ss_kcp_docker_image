@@ -109,7 +109,7 @@ def filter_container_by_name(containers, container_name):
             yield container
 
 
-class MainHandler(tornado.web.RequestHandler):
+class ApiHandler(tornado.web.RequestHandler):
     def data_received(self, chunk):
         pass
 
@@ -122,6 +122,14 @@ class MainHandler(tornado.web.RequestHandler):
             containers = filter_container_by_name(containers, container_name)
         self.write(json.dumps(generate_ss_links(containers)))
         self.set_header("Content-Type", "application/json; charset=utf-8")
+
+
+class MainHandler(tornado.web.RequestHandler):
+    def data_received(self, chunk):
+        pass
+
+    def get(self):
+        self.render('templates/index.html')
 
 
 def main():
@@ -144,6 +152,7 @@ def main():
     }
     application = tornado.web.Application([
         (r'/', MainHandler),
+        (r'/data', ApiHandler),
         (r'/(apple-touch-icon\.png)',
          tornado.web.StaticFileHandler,
          dict(path=settings['static_path']))
