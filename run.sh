@@ -151,5 +151,8 @@ chmod +x ${ssserver_bin} ${kcptun_bin}
 nohup /root/webui/parse_arukas_json.py 2>&1 > /var/log/parse_arukas_json.py.log &
 nohup ${sscmd} 2>&1 > /var/log/shadowsocks.log &
 nohup ${kcpcmd} &
-/usr/sbin/sshd -D 2>&1 > /var/log/sshd.log
+nohup /usr/sbin/sshd -D 2>&1 > /var/log/sshd.log &
 
+while(true); do
+    sleep 3600
+done
